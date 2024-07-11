@@ -1,0 +1,52 @@
+repos:
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.16.1
+  hooks:
+    - id: gitleaks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0 # pip install pre-commit-hooks
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: detect-aws-credentials
+  - id: detect-private-key
+  - id: pretty-format-json
+  - id: check-shebang-scripts-are-executable
+  - id: no-commit-to-branch
+    args: [--branch, main]
+# - repo: https://github.com/antonbabenko/pre-commit-terraform
+#   hooks:
+#     - id: terraform_tflint
+#       args:
+#         - --args=--module
+#         - --args=--enable-rule=terraform_documented_variables
+#     - id: terrascan
+#       args:
+#         - --args=--non-recursive # avoids scan errors on subdirectories without Terraform config files
+#         - --args=--policy-type=azure
+- repo: https://github.com/AleksaC/terraform-py
+  rev: v1.9.2 # pip install git+https://github.com/AleksaC/terraform-py.git@v1.9.2
+  hooks:
+    - id: tf-fmt
+    - id: tf-validate
+- repo: https://github.com/terraform-docs/terraform-docs
+  rev: "v0.18.0" # go install github.com/terraform-docs/terraform-docs@v0.18.0
+  hooks:
+    - id: terraform-docs-go
+      args: ["ARGS", "TO PASS", "INCLUDING PATH"]  # e.g. ["--output-file", "README.md", "./mymodule/path"]
+- repo: local
+  hooks:
+    - id: trufflehog # brew install trufflehog
+      name: TruffleHog
+      description: Detect secrets in your data.
+      entry: bash -c 'trufflehog git file://. --since-commit HEAD --only-verified --fail'
+      # For running trufflehog in docker, use the following entry instead:
+      # entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
+      language: system
+      stages: ["commit", "push"]
+# - repo: https://github.com/markdownlint/markdownlint
+# - repo: https://github.com/adrienverge/yamllint # pip install --user yamllint
+# - repo: https://github.com/google/yamlfmt # go install github.com/google/yamlfmt/cmd/yamlfmt@latest

@@ -1,0 +1,13 @@
+# https://clients2.google.com/service/update2/crx
+domain: https://chrome.google.com
+path: /webstore/detail/
+crx:
+  1password: aeblfdkhhhdcdjpifhhbdiojplfjnc
+  todoist: jldhpllghnbhlbpcmnajkpdmadaola
+  passbolt: didegimhafipceonhjepacocaffmop
+  remarkable: bfhkfdnddlhfippjbflipboognpdpo
+  listening: amjjglmomeodglgclcnjdjbhhcfnbn
+  adobe-acrobat: efaidnbmnnnibpcajpcglclefindmk
+  hunter: hgmhmanijnjhaffoampdlllchpolkd
+  uBlacklist: pncfbmialoiaghdehhbnbhkkgmjanf
+  tampermonkey: dhdgffkkebhmkfjojejmpbldmpobfkfo
