@@ -15,12 +15,7 @@
 # uBlacklist : pncfbmialoiaghdehhbnbhkkgmjanfhe
 # tampermonkey : dhdgffkkebhmkfjojejmpbldmpobfkfo
 
-# brew install cloudflared && 
-
-# sudo cloudflared service install eyJhIjoiNWMxNTkxZTlkNWIwNDMzNmNjMDJmMjk2NDFiZjE3MmYiLCJ0IjoiMGNhNTVmZGQtMDI0Ni00MDlkLWI5YzAtMjJmZTk3NzFjY2NhIiwicyI6Ik9ESTBNR1JoT1dNdE9EZGxaaTAwWTJWbExXRmhaVEV0WVdSa05UTmtOek5qTnpoaCJ9
-
-# sudo cloudflared service install eyJhIjoiNWMxNTkxZTlkNWIwNDMzNmNjMDJmMjk2NDFiZjE3MmYiLCJ0IjoiNDQ3ZjBkMjItZWM5Yi00Y2EyLTg4ZDAtZTE3OTQ3OGFkZjNmIiwicyI6Ik16aGhNbUpqWWpNdFkyWTBaaTAwWWpOaExXSTNZakV0TjJOak1EZ3lNVGMwTlRkbSJ9
-
+# brew install cloudflared &&
 
 # CloudFlare
 #    Access Groups
