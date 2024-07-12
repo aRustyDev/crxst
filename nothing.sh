@@ -14,13 +14,3 @@
 # hunter : hgmhmanijnjhaffoampdlllchpolkdnj
 # uBlacklist : pncfbmialoiaghdehhbnbhkkgmjanfhe
 # tampermonkey : dhdgffkkebhmkfjojejmpbldmpobfkfo
-
-# brew install cloudflared &&
-
-# CloudFlare
-#    Access Groups
-#       - Engagements
-#           - usg123
-#           - usg123
-#           - usg123
-#       - Admins
