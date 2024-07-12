@@ -120,13 +120,19 @@ impl<'a> CrxYml {
         self = &serde_yaml::from_str::<CrxYml>(&contents).unwrap();
     }
 
-    async fn download_crx(&self, crx_id: &str, tmp: &str) -> Result<(), Error>{
-        let target = self.uri + crx_id;
+    async fn download_crx(&self, crx_id: &str, tmp: &str) -> Result<(), Box<dyn std::error::Error>>{
+
+        // Create a file to write the CRX to
+        let mut fname = File::create(format!("{}{}", tmp, crx_id))?;
+
+        // Download the file
+        let target = format!("{}{}", self.uri, crx_id);
         let response = reqwest::get(target).await?;
         let content =  response.text().await?;
-        let fname = format!("{}{}", tmp, crx_id);
-        File::create(fname)?;
+
+        // Write the file to disk
         copy(&mut content.as_bytes(), &mut fname)?;
+
         Ok(())
     }
 
@@ -250,33 +256,33 @@ fn query_user() {
 //                     This is expected behavior."#;
 
 /// CLI tool to install & administer Chrome Extensions via a headless Chrome instance.
-#[derive(Parser, Debug)]
+#[derive(Clone, Parser, Debug)]
 #[command(version, about, author, after_help = "", long_about = None)]
-struct Args {
+struct Args<'a> {
 
     /// Install new Chrome extensions described in the CRX.yaml.
-    #[arg(short = "i", long)]
+    #[arg(short, long)]
     install: bool,
 
     /// Cleanup artifacts from previous runs.
-    #[arg(short = "c", long)]
+    #[arg(short, long)]
     cleanup: bool,
 
     /// Import the specified Zipped CRX.
-    #[arg(short = "l", long)]
+    #[arg(short, long)]
     load: bool,
 
     /// Export currently installed Chrome extensions as a Zipped CRX file.
-    #[arg(short = "e", long)]
+    #[arg(short, long)]
     export: bool,
 
     /// Export currently installed Chrome extensions as a Zipped CRX file.
-    #[arg(short = "u", long)]
+    #[arg(short, long)]
     update: bool,
 
-    /// URL/Filepath to the target import/export/config.
-    #[arg(short = "p", long, default_value_t = "../data/crx.yaml".to_string())]
-    path: String,
+    /// Export currently installed Chrome extensions as a Zipped CRX file
+    #[arg(short, long, value_parser, default_value_t = "../data/crx.yaml")]
+    path: &'a str,
 }
 
 fn main() -> Result<(), Error> {
