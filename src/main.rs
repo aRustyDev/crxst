@@ -100,33 +100,45 @@ use tempfile::Builder;
 // }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct CrxYml {
+pub struct Yml {
     uri: String,
-    // path: String,
-    crx:  HashMap<String, String>,
+    crx: HashMap<String, String>,
 }
 
-impl<'a> CrxYml {
-    fn new() -> CrxYml {
-        CrxYml {
-            uri: String::new(),
-            crx: HashMap::new()
-        }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Job {
+    cfg: Yml,
+    tmpdir: Box<str>,
+}
+
+impl<'a> Job {
+    // Creates new Job instance, also creates a temporary directory for CRX files. The TempDir is destroyed when the Job instance is goes out of scope.
+    fn new() -> Result<Job, Error> {
+        Ok(Job {
+            cfg: Yml {
+                uri: String::new(),
+                crx: HashMap::new(),
+            },
+            // TODO: replace 'example' with a CLI tool name
+            tmpdir: Builder::new().prefix("example").tempdir()?.path().to_str().ok_or("Could not create tempdir").unwrap().into(),
+        })
     }
 
+    // Initializes the Job instance with the contents of the CRX.yaml file.
     fn init(&mut self, path: &str) {
         let contents = fs::read_to_string(path)
             .expect("Should have been able to read the file");
-        *self = serde_yaml::from_str::<CrxYml>(&contents).unwrap();
+        self.cfg = serde_yaml::from_str::<Yml>(&contents).unwrap();
     }
 
-    async fn download_crx(&self, crx_id: &str, tmp: &str) -> Result<(), Box<dyn std::error::Error>>{
+    // Downloads the CRX file from the Chrome Web Store.
+    async fn download_crx(&self, crx_id: &str) -> Result<(), Box<dyn std::error::Error>>{
 
         // Create a file to write the CRX to
-        let mut fname = File::create(format!("{}{}", tmp, crx_id))?;
+        let mut fname = File::create(format!("{}{}", self.tmpdir, crx_id))?;
 
         // Download the file
-        let target = format!("{}{}", self.uri, crx_id);
+        let target = format!("{}{}", self.cfg.uri, crx_id);
         let response = reqwest::get(target).await?;
         let content =  response.text().await?;
 
@@ -136,21 +148,17 @@ impl<'a> CrxYml {
         Ok(())
     }
 
-    // Assumes CrxYml is
+    // Installs the CRX files into the Chrome browser.
     fn install(&mut self, path: &str) -> Result<(), Error> {
         // 1. Read Config CRX.yaml @ path
-        // self.crx = read_config(path);
         self.init(path);
-        // let f = std::fs::read_to_string(path)
-        // self.crx = serde_yaml::from_str(&f)?;
 
         // 2. Download CRX from Chrome Web Store
-        let map = self.crx.clone();
-        let _tmp = Builder::new().prefix("example").tempdir()?;
-        for (name, _id) in map.into_iter() {
+        let mut map = self.cfg.crx.clone();
+        for (name, id) in map.clone().into_iter() {
             println!("Downloading CRX: {}", name);
-            // self.download_crx(id, tmp);
-            // map.remove(name);
+            self.download_crx(&id);
+            map.remove(&name);
         }
 
         // 3. Unzip CRX
@@ -164,6 +172,7 @@ impl<'a> CrxYml {
         Ok(())
     }
 
+    // Exports the currently installed Chrome Extensions as a Zipped CRX file.
     fn export(&self, _path: &str) -> Result<(), Error> {
         println!("You ran '{:#?}'!", "export");
         println!("Not Implemented Yet!");
@@ -173,6 +182,7 @@ impl<'a> CrxYml {
         // 3. Pack Extension
     }
 
+    // Imports a Zipped CRX file into Chrome.
     fn load(&self, _path: &str) -> Result<(), Error> {
         println!("You ran '{:#?}'!", "export");
         println!("Not Implemented Yet!");
@@ -183,6 +193,7 @@ impl<'a> CrxYml {
         // 4. Install Extensions
     }
 
+    // Cleans up artifacts from previous runs.
     fn cleanup(&self, _path: &str) -> Result<(), Error> {
         println!("You ran '{:#?}'!", "export");
         println!("Not Implemented Yet!");
@@ -206,49 +217,15 @@ impl<'a> CrxYml {
 //     println!("CONNECT: {}", String::from_utf8_lossy(&connect.stdout));
 // }
 
-// fn type_of<T>(_: T) -> &'static str {
-//     type_name::<T>()
-// }
-
-// fn read_config(path: &str) -> Vec<String> {
-//     // Open the file in read-only mode with buffer.
-//     // let f = std::fs::File::open(path).unwrap();
-//     let f = std::fs::read_to_string(path).unwrap();
-//     // Deserialize the YAML file into a String
-//     let d: Value = serde_yaml::from_str::<Value>(&f).unwrap();
-//     let mut ids: Vec<String> = Vec::<String>::new();
-
-//     for (key, value) in d.get("crx").unwrap().as_mapping().unwrap() {
-//         println!("{} / {}", key, value);
-//         ids.push(value);
-//     }
-
-//     // println!("Type: {:?}", type_of());
-//     // println!("Deserialized: {:?}", ids);
-
-//     // // Path to your YAML file
-//     // let file_path = "config.yaml";
-
-//     // // Open the file
-//     // let mut file = File::open(file_path);
-//     // // Read the contents of the file
-//     // let mut contents = String::new();
-//     // file.read_to_string(&mut contents)?;
-
-//     // Deserialize the YAML content into a Vec<String>
-//     let data_array: Vec<String> = Vec::<String>::new();
-//     return data_array;
-// }
-
 fn query_user() {
-    // let mut input = String::new();
-    // println!("This will stop chrome Do you want to continue? (y/n)");
-    // std::io::stdin().read_line(&mut input).unwrap();
-    // match input.trim() {
-    //     "y" => println!("Continuing..."),
-    //     "n" => println!("Exiting..."),
-    //     _ => println!("Invalid input! Exiting..."),
-    // }
+    let mut input = String::new();
+    println!("This will stop chrome Do you want to continue? (y/n)");
+    std::io::stdin().read_line(&mut input).unwrap();
+    match input.trim() {
+        "y" => println!("Continuing..."),
+        "n" => println!("Exiting..."),
+        _ => println!("Invalid input! Exiting..."),
+    }
 }
 
 // let helpmsg = r#"CRX is designed to deploy a Chrome browser instance in remote debugging mode \
@@ -280,8 +257,9 @@ struct Args {
     #[arg(short, long)]
     update: bool,
 
+    // TODO: set default value to HOME/.config/crx.yaml (or Chrome config dir)
     /// Export currently installed Chrome extensions as a Zipped CRX file.
-    #[arg(short, long, default_value_t = String::from("../data/crx.yaml"))]
+    #[arg(short, long, default_value_t = String::from("data/crx.yaml"))]
     path: String,
 }
 
@@ -292,10 +270,10 @@ fn main() -> Result<(), Error> {
     //     .literal(styling::AnsiColor::Blue.on_default() | styling::Effects::BOLD)
     //     .placeholder(styling::AnsiColor::Cyan.on_default());
     let args = Args::parse();
-    let mut crx_yml = CrxYml::new();
+    let crx_yml = Job::new();
 
     let _ = match args {
-        Args { install: true, .. } => crx_yml.install(&args.path),
+        Args { install: true, .. } => crx_yml?.install(&args.path),
         // Args { cleanup: true, .. } => crx_yml.cleanup(&args.path),
         // Args { load: _, .. } => crx_yml.load(&args.path),
         // Args { export: true, .. } => crx_yml.export(&args.path),
